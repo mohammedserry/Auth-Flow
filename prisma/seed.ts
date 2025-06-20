@@ -1,25 +1,36 @@
+import { title } from 'process';
 import { PrismaClient } from './generated/prisma';
+import { faker, id_ID } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
 export default async function main() {
-  // First delete all existing users to avoid duplicates
-  await prisma.user.deleteMany();
-
-  // Then create new users with unique emails
   await prisma.user.createMany({
-    data: [
-      {
-        name: 'John Doe',
-        email: 'john.doe@gmail.com', // Changed to unique email
-        password: 'john12345',
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@gmail.com', // Different email
-        password: 'jane12345',
-      },
-    ],
+    data: Array.from({ length: 25 }, () => ({
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      isEmailVerified: faker.datatype.boolean(),
+      provider: faker.helpers.arrayElement([
+        'EMAIL_PASSWORD',
+        'GOOGLE',
+        'GITHUB',
+      ]),
+    })),
+  });
+
+  await prisma.todo.createMany({
+    data: Array.from({ length: 25 }, () => ({
+      title: faker.lorem.sentence(),
+      description: faker.lorem.paragraph(),
+      completed: faker.datatype.boolean(),
+      priority: faker.helpers.arrayElement(['LOW', 'MEDIUM', 'HIGH']),
+      userId: faker.helpers.arrayElement([
+        '011ccd78-e10e-4bf1-8b39-e92b3fa69b43',
+        '03f2f326-f75e-40cb-b651-e6d64fc77953',
+      ]),
+    })),
   });
 
   console.log('Seed completed successfully!');
